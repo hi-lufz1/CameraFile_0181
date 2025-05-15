@@ -9,6 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 part 'camera_event.dart';
 part 'camera_state.dart';
@@ -175,5 +176,34 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         snackBarMessage: null,
       )
     );
+  }
+
+    @override
+  Future<void> close() async {
+    if (state is CameraReady) {
+      await (state as CameraReady).controller.dispose();
+    }
+    return super.close();
+  }
+
+  Future<void> _onRequestPermissions(
+    RequestPermission event,
+    Emitter<CameraState> emit,
+  ) async {
+    final statuses = await [
+      Permission.camera,
+      Permission.storage,
+      Permission.manageExternalStorage,
+    ].request();
+
+    final denied = statuses.entries.where((e) => !e.value.isGranted).toList();
+
+    if (denied.isNotEmpty) {
+      if (state is CameraReady) {
+        emit((state as CameraReady).copyWith(
+          snackBarMessage: 'Izin Kamera atau penyimpanan ditolak,'
+        ));
+      }
+    }
   }
 }
