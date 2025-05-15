@@ -1,3 +1,4 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:camera_file/bloc/camera_bloc.dart';
 import 'package:camera_file/bloc/camera_event.dart';
@@ -45,15 +46,12 @@ class _CameraPageState extends State<CameraPage> {
     );
   }
 
-    Widget build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: BlocBuilder<CameraBloc, CameraState>(
         builder: (context, state) {
-          return Container();
-        },
-      )<CameraBloc, CameraState>(
-        builder:  (context, state) {
           if (state is! CameraReady) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -71,7 +69,7 @@ class _CameraPageState extends State<CameraPage> {
                     },
                     child: CameraPreview(state.controller),
                   ),
-                  
+
                   Positioned(
                     top: 50,
                     right: 20,
@@ -100,16 +98,19 @@ class _CameraPageState extends State<CameraPage> {
                             TakePicture((file) => Navigator.pop(context, file)),
                           );
                         },
-                        child: const Icon(Icons.camera_alt, color: Colors.black),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: Colors.black,
+                        ),
                       ),
                     ),
                   ),
                 ],
               );
-            }
+            },
           );
-        }
-      )
+        },
+      ),
     );
   }
 }

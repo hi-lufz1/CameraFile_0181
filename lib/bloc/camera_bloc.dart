@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:camera_file/bloc/camera_event.dart';
@@ -112,10 +112,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       event.context,
       MaterialPageRoute(
         builder:
-            (_) => BlocProvider.value(
-              value: this, 
-              child: const CameraPage(),
-              ),
+            (_) => BlocProvider.value(value: this, child: const CameraPage()),
       ),
     );
 
@@ -149,7 +146,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   }
 
   Future<void> _onClearSnackbar(
-      ClearSnackbar event, Emitter<CameraState> emit) async {
+    ClearSnackbar event,
+    Emitter<CameraState> emit,
+  ) async {
     if (state is! CameraReady) return;
     final s = state as CameraReady;
     emit(s.copyWith(clearSnackbar: true));
@@ -158,25 +157,29 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
   Future<void> _setupController(
     int index,
     Emitter<CameraState> emit, {
-      CameraReady? previous,
-    }) async {
-      await previous?.controller.dispose();
-      final controller = CameraController(_cameras[index], ResolutionPreset.max,
-          enableAudio: false);
-      await controller.initialize();
-      await controller.setFlashMode(previous?.flashMode ?? FlashMode.off);
+    CameraReady? previous,
+  }) async {
+    await previous?.controller.dispose();
+    final controller = CameraController(
+      _cameras[index],
+      ResolutionPreset.max,
+      enableAudio: false,
+    );
+    await controller.initialize();
+    await controller.setFlashMode(previous?.flashMode ?? FlashMode.off);
 
-      emit(CameraReady(
-        controller: controller, 
-        selectedIndex: index, 
+    emit(
+      CameraReady(
+        controller: controller,
+        selectedIndex: index,
         flashMode: previous?.flashMode ?? FlashMode.off,
         imageFile: previous?.imageFile,
         snackBarMessage: null,
-      )
+      ),
     );
   }
 
-    @override
+  @override
   Future<void> close() async {
     if (state is CameraReady) {
       await (state as CameraReady).controller.dispose();
@@ -188,19 +191,22 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     RequestPermission event,
     Emitter<CameraState> emit,
   ) async {
-    final statuses = await [
-      Permission.camera,
-      Permission.storage,
-      Permission.manageExternalStorage,
-    ].request();
+    final statuses =
+        await [
+          Permission.camera,
+          Permission.storage,
+          Permission.manageExternalStorage,
+        ].request();
 
     final denied = statuses.entries.where((e) => !e.value.isGranted).toList();
 
     if (denied.isNotEmpty) {
       if (state is CameraReady) {
-        emit((state as CameraReady).copyWith(
-          snackBarMessage: 'Izin Kamera atau penyimpanan ditolak,'
-        ));
+        emit(
+          (state as CameraReady).copyWith(
+            snackBarMessage: 'Izin Kamera atau penyimpanan ditolak,',
+          ),
+        );
       }
     }
   }
