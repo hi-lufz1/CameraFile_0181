@@ -11,9 +11,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-part 'camera_event.dart';
-part 'camera_state.dart';
-
 class CameraBloc extends Bloc<CameraEvent, CameraState> {
   late final List<CameraDescription> _cameras;
 
