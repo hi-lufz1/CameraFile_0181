@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:camera_file/bloc/camera_event.dart';
@@ -37,5 +39,31 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     final s = state as CameraReady;
     final next = (s.selectedIndex + 1) % _cameras.length;
     await _setupController(next, emit, previous: s);
+  }
+
+  Future<void> _onToggleFlash(
+    ToogleFlash event,
+    Emitter<CameraState> emit,
+  ) async {
+    if (state is! CameraReady) return;
+    final s = state as CameraReady;
+    final next =
+        s.flashMode == FlashMode.off
+            ? FlashMode.auto
+            : s.flashMode == FlashMode.auto
+            ? FlashMode.always
+            : FlashMode.off;
+    await s.controller.setFlashMode(next);
+    emit(s.copyWith(flashMode: next));
+  }
+
+  Future<void> _onTakePicture(
+    TakePicture event,
+    Emitter<CameraState> emit,
+  ) async {
+    if (state is! CameraReady) return;
+    final s = state as CameraReady;
+    final file = await s.controller.takePicture();
+    event.onPictureTaken(File(file.path));
   }
 }
