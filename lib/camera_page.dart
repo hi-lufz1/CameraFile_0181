@@ -1,3 +1,4 @@
+import 'package:camera/camera.dart';
 import 'package:camera_file/bloc/camera_bloc.dart';
 import 'package:camera_file/bloc/camera_event.dart';
 import 'package:camera_file/bloc/camera_state.dart';
@@ -12,7 +13,7 @@ class CameraPage extends StatefulWidget {
 
 class _CameraPageState extends State<CameraPage> {
   @override
-    void initState() {
+  void initState() {
     super.initState();
     final bloc = context.read<CameraBloc>();
     if (bloc.state is! CameraReady) {
@@ -20,6 +21,13 @@ class _CameraPageState extends State<CameraPage> {
     }
   }
 
+  IconData _flashIcon(FlashMode mode) {
+    return switch (mode) {
+      FlashMode.auto => Icons.flash_auto,
+      FlashMode.always => Icons.flash_on,
+      _ => Icons.flash_off,
+    };
+  }
 
   Widget build(BuildContext context) {
     return const Placeholder();
