@@ -4,7 +4,9 @@ import 'package:bloc/bloc.dart';
 import 'package:camera/camera.dart';
 import 'package:camera_file/bloc/camera_event.dart';
 import 'package:camera_file/bloc/camera_state.dart';
+import 'package:camera_file/storage_helper.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 
@@ -92,6 +94,57 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       (state as CameraReady).copyWith(
         imageFile: file,
         snackBarMessage: 'Berhasil memilih dari galeri',
+      ),
+    );
+  }
+
+  Future<void> _onOpenCamera(
+    OpenCameraAndCapture event,
+    Emitter<CameraState> emit,
+  ) async {
+    print('[CameraBloc] OpenCameraAndCapture triggered');
+
+    if (state is! CameraReady) {
+      print('[CameraBloc] state is not ready, abort');
+      return;
+    }
+
+    final file = await Navigator.push<File?>(
+      event.context,
+      MaterialPageRoute(
+        builder:
+            // (_) => BlocProvider.value(
+            //   value: this, 
+            //   child: const CameraPage(),
+            //   ),
+      ),
+    );
+
+    if (file != null) {
+      final saved = await StorageHelper.saveImage(file, 'camera');
+      emit(
+        (state as CameraReady).copyWith(
+          imageFile: saved,
+          snackBarMessage: 'Disimpan ${saved.path}',
+        ),
+      );
+    }
+  }
+
+  Future<void> _onDeleteImage(
+    DeleteImage event,
+    Emitter<CameraState> emit,
+  ) async {
+    if (state is! CameraReady) return;
+    final s = state as CameraReady;
+    await s.imageFile?.delete();
+    emit(
+      CameraReady(
+        controller: s.controller,
+        selectedIndex: s.selectedIndex,
+        flashMode: s.flashMode,
+        imageFile: null,
+        snackBarMessage: 'Gambar dihapus',
       ),
     );
   }
